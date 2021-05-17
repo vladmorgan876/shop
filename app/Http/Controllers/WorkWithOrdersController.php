@@ -1,0 +1,53 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class WorkWithOrdersController extends Controller
+{
+    public function index(){
+        return view('OrderPage1');
+    }
+    public function showListOrders(){
+        $allOrders = DB::table('orders')->get();
+        return view('OrderPage1')->with(['allOrders' => $allOrders]);
+    }
+    public function selectOrderByDate(Request $request){
+        $this->orderdate = $request->selectdate;
+        $selectOrderByDate = DB::table('orders')->where('orderdate', $this->orderdate)->get();
+
+
+//        var_dump(count($selectOrderByDate));
+
+
+        return view('OrderPage1')->with(['selectOrderByDate' => $selectOrderByDate,'date'=>$this->orderdate]);
+    }
+    public function selectOrderByPeriod(Request $request){
+        $this->date1=$request->selectdate1;
+        $this->date2=$request->selectdate2;
+        $selectOrderByPeriod = DB::table('orders')->whereBetween('orderdate',[$this->date1,$this->date2] )->get();
+        return view('OrderPage1')->with(['selectOrderByPeriod' => $selectOrderByPeriod,'date1'=>$this->date1,'date2'=>$this->date2]);
+    }
+    public function orderdelete($id){
+        DB::table('orders')->delete($id);
+        return redirect()->route('ListOrders');
+    }
+    public function ordercompleted($id){
+        DB::table('orders')->where('id', $id)->update(['status' =>'выполнен','ordercompleted'=>date('Y-m-d')]);
+        return redirect()->route('ListOrders');
+    }
+    public function showCompletedOrders(){
+        $completedOrders = DB::table('orders')->where('status', 'выполнен')->get();
+        return view('OrderPage1')->with(['completedOrders' => $completedOrders]);
+    }
+    public function showNotDoneOrders(){
+        $noDoneOrders = DB::table('orders')->where('status', 'принят')->get();
+        return view('OrderPage1')->with(['noDoneOrders' => $noDoneOrders]);
+    }
+    public function selectClient(Request $request){
+       $client=DB::table('orders')->where('username',$request->selectclient)->get();
+        return view('OrderPage1')->with(['client' => $client]);
+    }
+}
